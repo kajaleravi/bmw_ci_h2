@@ -1,0 +1,27 @@
+version: 1
+formatters:
+  detailed:
+    format: '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: detailed
+  file:
+    class: logging.FileHandler
+    filename: bmw_pipeline.log
+    level: DEBUG
+    formatter: detailed
+loggers:
+  __main__:
+    level: DEBUG
+    handlers: [console, file]
+  message_handler:
+    level: DEBUG
+    handlers: [console, file]
+  communication_channel:
+    level: DEBUG
+    handlers: [console, file]
+root:
+  level: DEBUG
+  handlers: [console]

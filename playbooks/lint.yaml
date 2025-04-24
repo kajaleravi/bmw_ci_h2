@@ -1,0 +1,35 @@
+- hosts: all
+  tasks:
+    - name: Install BMW pipeline syntax tools
+      pip:
+        name:
+          - pylint
+          - flake8
+          - mypy
+        virtualenv: ./venv
+    
+    - name: Run Pylint for BMW code quality
+      shell: |
+        source venv/bin/activate
+        pylint --fail-under=8 *.py  # Fail if score < 8/10
+      register: pylint_result
+      failed_when: pylint_result.rc != 0
+    
+    - name: Run Flake8 for BMW style
+      shell: |
+        source venv/bin/activate
+        flake8 --max-line-length=120 *.py
+      register: flake8_result
+      failed_when: flake8_result.rc != 0
+    
+    - name: Run Mypy for BMW type safety
+      shell: |
+        source venv/bin/activate
+        mypy --strict *.py
+      register: mypy_result
+      failed_when: mypy_result.rc != 0
+    
+    - name: Archive BMW lint results
+      archive:
+        path: "*.log"
+        dest: "lint_results.tar.gz"

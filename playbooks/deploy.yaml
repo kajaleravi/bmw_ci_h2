@@ -1,0 +1,12 @@
+- hosts: all
+  tasks:
+    - name: Simulate BMW production deployment
+      shell: |
+        source venv/bin/activate
+        python main.py > deployment.log
+      register: deploy_result
+    
+    - name: Verify BMW deployment
+      shell: grep -i "error" deployment.log
+      register: error_check
+      failed_when: error_check.rc == 0  # Fail if errors found

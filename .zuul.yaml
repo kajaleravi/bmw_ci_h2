@@ -1,0 +1,54 @@
+- project:
+    name: bmw-production-pipeline
+    check:
+      jobs:
+        - bmw-syntax-check:  # "Putzerfish"-style syntax validation
+            trigger:
+              gerrit:
+                - event: patchset-created
+        - bmw-unit-tests:
+            trigger:
+              gerrit:
+                - event: patchset-created
+        - bmw-integration-tests:
+            trigger:
+              gerrit:
+                - event: patchset-created
+    gate:
+      jobs:
+        - bmw-syntax-check
+        - bmw-unit-tests
+        - bmw-integration-tests
+    post:
+      jobs:
+        - bmw-deploy:
+            trigger:
+              gerrit:
+                - event: change-merged
+
+- job:
+    name: bmw-syntax-check
+    run: playbooks/lint.yaml
+    timeout: 300
+    failure-message: "Syntax errors detected - blocking production deployment"
+
+- job:
+    name: bmw-unit-tests
+    run: playbooks/test.yaml
+    nodeset:
+      nodes:
+        - name: ubuntu-latest
+          label: ubuntu-latest
+    pre-run: playbooks/lint.yaml  # Extra safety
+    failure-message: "Unit tests failed - production deployment blocked"
+
+- job:
+    name: bmw-integration-tests
+    run: playbooks/test.yaml  # Simplified for demo
+    depends-on: bmw-unit-tests
+    failure-message: "Integration tests failed - production deployment blocked"
+
+- job:
+    name: bmw-deploy
+    run: playbooks/deploy.yaml
+    success-message: "BMW production update deployed successfully"

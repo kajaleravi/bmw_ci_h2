@@ -1,0 +1,18 @@
+- hosts: all
+  tasks:
+    - name: Setup BMW test environment
+      pip:
+        requirements: requirements.txt
+        virtualenv: ./venv
+    
+    - name: Run BMW unit tests
+      shell: |
+        source venv/bin/activate
+        bazel test //:test_communication --test_output=all
+      register: test_result
+      failed_when: test_result.rc != 0
+    
+    - name: Publish BMW test results
+      copy:
+        content: "{{ test_result.stdout }}"
+        dest: "test_results.txt"
